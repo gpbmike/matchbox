@@ -1,0 +1,23 @@
+{
+  "name": "matchbox",
+  "version": "0.0.0",
+  "authors": [
+    "Mike Horn <gpbmike@gmail.com>"
+  ],
+  "description": "An Ember Data adapter for Firebase.",
+  "main": "dist/matchbox.js",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "tests"
+  ],
+  "dependencies": {
+    "ember-data": "1.x",
+    "firebase": "~1.0.10"
+  },
+  "devDependencies": {
+    "qunit": "~1.14.0"
+  }
+}
