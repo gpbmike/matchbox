@@ -32,6 +32,23 @@ Features
 
 Developing
 ----------
+```
+# Install dependencies
+npm install
+
+# Run tests
+grunt test
+
+# Automatically test as you develop
+grunt dev
+
+# Build new distribution version
+grunt build
+
+# Run server to test in browser without running tests in background
+grunt serve
+```
+
 In order to run the tests against Matchbox you will need to add a `firebase-config.js` file to the `tests` directory. The file only needs to define `window.firebaseURL` which should be a writable Firebase endpoint.
 
 ```javascript
