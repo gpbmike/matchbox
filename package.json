@@ -1,6 +1,16 @@
 {
   "name": "matchbox",
   "version": "0.0.0",
+  "homepage": "https://github.com/gpbmike/matchbox",
+  "author": {
+    "name": "Mike Horn",
+    "email": "gpbmike@gmail.com",
+    "url": "https://github.com/gpbmike"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gpbmike/matchbox.git"
+  },
   "namespace": "DS",
   "scripts": {
     "postinstall": "bower install",
@@ -15,9 +25,12 @@
     "grunt-contrib-qunit": "~0.3.0",
     "grunt-contrib-connect": "~0.6.0",
     "grunt-contrib-watch": "~0.5.3",
-    "grunt-contrib-uglify": "~0.3.0",
+    "grunt-contrib-uglify": "~0.4.0",
     "bower": "~1.2",
-    "lockfile": "~0.4.2"
+    "lockfile": "~0.4.2",
+    "jshint-stylish": "~0.1.5",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-concat": "~0.3.0"
   },
   "peerDependencies": {
     "grunt-cli": "~0.1.13"
