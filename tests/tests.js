@@ -18,10 +18,11 @@ module("Firebase Adapter", {
     SuperUser = DS.Model.extend();
 
     env = setupStore({
-      post     : Post,
-      comment  : Comment,
-      superUser: SuperUser,
-      adapter  : DS.FirebaseAdapter.extend({ firebase: firebase })
+      post      : Post,
+      comment   : Comment,
+      superUser : SuperUser,
+      adapter   : DS.FirebaseAdapter.extend({ firebase: firebase }),
+      serializer: DS.FirebaseSerializer.extend()
     });
 
     store   = env.store;
