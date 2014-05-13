@@ -1,4 +1,4 @@
-/*! matchbox - v0.0.0 - 2014-03-19
+/*! matchbox - v0.0.0 - 2014-05-13
 * https://github.com/gpbmike/matchbox
 * Copyright (c) 2014 Mike Horn; Licensed MIT */
 (function() {
@@ -80,7 +80,7 @@
             } else {
               // No data found, reject and stop observing
               ref.off();
-              Ember.run(null, reject, new Ember.Error('No result found.'));
+              Ember.run(null, reject, 'No result found for ' + snapshot.ref().toString());
             }
 
           } else {

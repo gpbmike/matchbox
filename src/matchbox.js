@@ -77,7 +77,7 @@
             } else {
               // No data found, reject and stop observing
               ref.off();
-              Ember.run(null, reject, new Ember.Error('No result found.'));
+              Ember.run(null, reject, 'No result found for ' + snapshot.ref().toString());
             }
 
           } else {
