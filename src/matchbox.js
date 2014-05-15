@@ -132,8 +132,9 @@
       }
 
       function _removeChild(snapshot) {
-        if (resolved && store.hasRecordForId(type, snapshot.name())) {
-          store.deleteRecord(store.getById(type, snapshot.name()));
+        var record = store.getById(type, snapshot.name());
+        if (resolved && record) {
+          record.destroyRecord();
         }
       }
 

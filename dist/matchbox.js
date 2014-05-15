@@ -1,4 +1,4 @@
-/*! matchbox - v0.0.0 - 2014-05-13
+/*! matchbox - v0.0.0 - 2014-05-15
 * https://github.com/gpbmike/matchbox
 * Copyright (c) 2014 Mike Horn; Licensed MIT */
 (function() {
@@ -135,8 +135,9 @@
       }
 
       function _removeChild(snapshot) {
-        if (resolved && store.hasRecordForId(type, snapshot.name())) {
-          store.deleteRecord(store.getById(type, snapshot.name()));
+        var record = store.getById(type, snapshot.name());
+        if (resolved && record) {
+          record.destroyRecord();
         }
       }
 
