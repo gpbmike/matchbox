@@ -1,4 +1,4 @@
-/*! matchbox - v0.0.0 - 2014-05-15
+/*! matchbox - v0.0.0 - 2014-05-16
 * https://github.com/gpbmike/matchbox
 * Copyright (c) 2014 Mike Horn; Licensed MIT */
 (function() {
@@ -43,6 +43,8 @@
       this._ref = this.firebase.ref();
       // Keep track of what types `.findAll()` has been called for
       this._findAllMapForType = {};
+      // Keep track of what types `.findQuery()` has been called for
+      this._findQueryMapForType = {};
     },
 
     // Uses push() to generate chronologically ordered unique IDs.
@@ -177,6 +179,84 @@
       }, "DS: FirebaseAdapter#findAll " + type + " to " + ref.toString());
     },
 
+    findQuery: function(store, type, query) {
+      var resolved = false;
+      var ref = this._getRef(type);
+      var serializer = store.serializerFor(type);
+      var self = this;
+
+      query = query || {};
+      if (query.limit) {
+        ref = ref.limit(query.limit);
+      }
+      if (query.startAt) {
+        ref = query.startAt === true ? ref.startAt() : ref.startAt(query.startAt);
+      }
+      if (query.endAt) {
+        ref = query.endAt === true ? ref.endAt() : ref.endAt(query.endAt);
+      }
+
+      function _addChild(snapshot) {
+        if (resolved) {
+          var obj = snapshot.val();
+          obj.id = snapshot.name();
+          store.push(type, serializer.extractSingle(store, type, obj));
+        }
+      }
+
+      function _updateChild(snapshot) {
+        if (resolved && store.hasRecordForId(type, snapshot.name())) {
+          store.getById(type, snapshot.name()).setProperties(serializer.extractSingle(store, type, snapshot.val())).save();
+        }
+      }
+
+      function _removeChild(snapshot) {
+        var record = store.getById(type, snapshot.name());
+        if (resolved && record) {
+          record.destroyRecord();
+        }
+      }
+
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+
+        function _handleError(err) {
+          if (!resolved) {
+            resolved = true;
+            Ember.run(null, reject, err);
+          }
+        }
+
+        function _value(snapshot) {
+          resolved = true;
+
+          var results = Ember.A([]);
+
+          snapshot.forEach(function(child) {
+            var record = child.val();
+            record.id = child.name();
+            results.push(record);
+          });
+
+          Ember.run(null, resolve, results);
+        }
+
+        // Only add listeners to a type once
+        var typeQuery = type;
+        Object.keys(query).forEach(function (key) {
+          typeQuery = typeQuery + key + query[key];
+        });
+        if (Ember.isNone(self._findQueryMapForType[typeQuery])) {
+          self._findQueryMapForType[typeQuery] = true;
+          ref.on("child_added", _addChild, _handleError);
+          ref.on("child_changed", _updateChild, _handleError);
+          ref.on("child_removed", _removeChild, _handleError);
+        }
+
+        ref.once("value", _value, _handleError);
+
+      }, "DS: FirebaseAdapter#findAll " + type + " to " + ref.toString());
+    },
+
     /**
       Called by the store when a newly created record is saved via the `save`
       method on a model record instance.
@@ -265,7 +345,13 @@
       Keep track of what types `.findAll()` has been called for
       so duplicate listeners aren't added
     */
-    _findAllMapForType: undefined
+    _findAllMapForType: undefined,
+
+    /**
+      Keep track of what types `.findQuery()` has been called for
+      so duplicate listeners aren't added
+    */
+    _findQueryMapForType: undefined
 
   });
 
