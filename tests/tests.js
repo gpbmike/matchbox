@@ -208,3 +208,41 @@ asyncTest("adapter#findAll - update store on firebase update (delete)", function
   });
 
 });
+
+asyncTest("adapter#findQuery - find limited records of type in firebase", function() {
+
+  var postRef = firebase.child(adapter.pathForType('post'));
+
+  var data = {};
+
+  ["The Parley Letter", "The Fishy Letter"].forEach(function (name) {
+    data[adapter.generateIdForRecord()] = { name: name };
+  });
+
+  postRef.update(data, function () {
+    store.find('post', { limit: 1 }).then(function (posts) {
+      equal(posts.get('firstObject.name'), "The Fishy Letter", "found limited posts");
+      start();
+    });
+  });
+
+});
+
+asyncTest("adapter#findQuery - find limited records of type in firebase (reverse)", function() {
+
+  var postRef = firebase.child(adapter.pathForType('post'));
+
+  var data = {};
+
+  ["The Parley Letter", "The Fishy Letter"].forEach(function (name) {
+    data[adapter.generateIdForRecord()] = { name: name };
+  });
+
+  postRef.update(data, function () {
+    store.find('post', { limit: 1, startAt: true }).then(function (posts) {
+      equal(posts.get('firstObject.name'), "The Parley Letter", "found limited posts");
+      start();
+    });
+  });
+
+});
