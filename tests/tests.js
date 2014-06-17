@@ -66,7 +66,7 @@ asyncTest("adapter#find - rejects promise on no data", function() {
 
   expect(1);
 
-  store.find('post', id).catch(function (reason) {
+  store.find('post', id).then(function () {}, function (reason) {
     ok(reason, 'Failed to find made up ID and gave a reason');
     start();
   });
@@ -246,3 +246,27 @@ asyncTest("adapter#findQuery - find limited records of type in firebase (reverse
   });
 
 });
+
+// asyncTest("adapter#set - change id", function () {
+//   var postRef = firebase.child(adapter.pathForType('post'));
+//
+//   var data = {};
+//   var initialRecordId = adapter.generateIdForRecord();
+//   var newRecordId = adapter.generateIdForRecord();
+//
+//   ["The Parley Letter"].forEach(function (name) {
+//     data[initialRecordId] = { name: name };
+//   });
+//
+//   postRef.update(data, function () {
+//     store.find('post', initialRecordId).then(function (post) {
+//       post.set('id', newRecordId).save().then(function () {
+//         store.find('post').then(function (posts) {
+//           equal(posts.get('length'), 1, "One post");
+//         //   equal(posts.get('firstObject.id'), newRecordId, "Post has new id");
+//           start();
+//         });
+//       });
+//     });
+//   });
+// });
