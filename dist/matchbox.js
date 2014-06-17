@@ -1,4 +1,4 @@
-/*! matchbox - v0.0.0 - 2014-05-16
+/*! matchbox - v0.0.0 - 2014-06-17
 * https://github.com/gpbmike/matchbox
 * Copyright (c) 2014 Mike Horn; Licensed MIT */
 (function() {
@@ -53,6 +53,21 @@
     },
 
     /**
+      Use the Firebase snapshot.name() as the record id
+
+      @param {Object} snapshot - A Firebase snapshot
+      @param {Object} payload - The payload that will be pushed into the store
+      @return {Object} payload
+    */
+    _assignIdToPayload: function(snapshot) {
+      var payload = snapshot.val();
+      if (payload !== null && typeof payload === 'object' && typeof payload.id === 'undefined') {
+        payload.id = snapshot.name();
+      }
+      return payload;
+    },
+
+    /**
       Called by the store to retrieve the JSON for a given type and ID. The
       method will return a promise which will resolve when the value is
       successfully fetched from Firebase.
@@ -61,47 +76,55 @@
       also be automatically updated whenever the remote value changes.
     */
     find: function(store, type, id) {
+      var adapter = this;
       var resolved = false;
       var ref = this._getRef(type, id);
       var serializer = store.serializerFor(type);
-      var self = this;
 
       return new Ember.RSVP.Promise(function(resolve, reject) {
         ref.on("value", function(snapshot) {
-          var obj = snapshot.val();
+          var payload = adapter._assignIdToPayload(snapshot);
+          var record = store.getById(type, snapshot.name());
 
           if (!resolved) {
-
-            // If this is the first event, resolve the promise.
             resolved = true;
+            // If this is the first event, resolve the promise.
+            if (payload === null) {
+              if (store.hasRecordForId(type, id)) {
+                Ember.run(function () {
+                  store.dematerializeRecord(record);
+                });
+              }
 
-            if (obj) {
-              // Data found, resolve
-              obj.id = snapshot.name();
-              Ember.run(null, resolve, obj);
-            } else {
-              // No data found, reject and stop observing
-              ref.off();
-              Ember.run(null, reject, 'No result found for ' + snapshot.ref().toString());
+              Ember.run(null, reject, 'no record was found at %@' + ref.toString());
+            }
+            else {
+              Ember.run(null, resolve, payload);
             }
 
           } else {
 
             // Otherwise, update the store.
 
-            if (obj) {
-              // update record, pass through serializer
-              store.getById(type.typeKey, id).setProperties(serializer.extractSingle(store, type, obj)).save();
-            } else {
-              // remove record, stop watching
-              store.getById(type.typeKey, id).destroyRecord();
+            // If the snapshot is null, delete the record from the store
+            if (payload === null && record && !record.get('isDeleted')) {
+              Ember.run(function () {
+                record.destroyRecord();
+              });
+            }
+            // Otherwise push it into the store
+            else if (payload !== null) {
+              Ember.run(function () {
+                // store.push(type, serializer.extractSingle(store, type, payload));
+                record.setProperties(serializer.extractSingle(store, type, payload)).save();
+              });
             }
 
           }
-        }, function(err) {
+        }, function(error) {
           // Only called in cases of permission related errors.
           if (!resolved) {
-            Ember.run(null, reject, err);
+            Ember.run(null, reject, error);
           }
         });
       }, "DS: FirebaseAdapter#find " + type + " to " + ref.toString());
@@ -131,14 +154,15 @@
       }
 
       function _updateChild(snapshot) {
-        if (resolved && store.hasRecordForId(type, snapshot.name())) {
-          store.getById(type, snapshot.name()).setProperties(serializer.extractSingle(store, type, snapshot.val())).save();
+        var record = store.getById(type, snapshot.name());
+        if (resolved && record && !record.get('isDeleted')) {
+          record.setProperties(serializer.extractSingle(store, type, snapshot.val())).save();
         }
       }
 
       function _removeChild(snapshot) {
         var record = store.getById(type, snapshot.name());
-        if (resolved && record) {
+        if (resolved && record && !record.get('isDeleted')) {
           record.destroyRecord();
         }
       }
@@ -283,7 +307,7 @@
       Update is the same as create for this adapter, since the number of
       attributes for a given model does not change.
     */
-    updateRecord: function () {
+    updateRecord: function (store, type, record) {
       return this.createRecord.apply(this, arguments);
     },
 
