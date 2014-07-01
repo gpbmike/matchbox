@@ -1,4 +1,4 @@
-/*! matchbox - v0.0.0 - 2014-06-17
+/*! matchbox - v0.0.0 - 2014-07-01
 * https://github.com/gpbmike/matchbox
 * Copyright (c) 2014 Mike Horn; Licensed MIT */
 (function() {
@@ -234,12 +234,12 @@
         }
       }
 
-      function _removeChild(snapshot) {
-        var record = store.getById(type, snapshot.name());
-        if (resolved && record) {
-          record.destroyRecord();
-        }
-      }
+      // function _removeChild(snapshot) {
+      //   var record = store.getById(type, snapshot.name());
+      //   if (resolved && record) {
+      //     record.destroyRecord();
+      //   }
+      // }
 
       return new Ember.RSVP.Promise(function(resolve, reject) {
 
@@ -273,7 +273,7 @@
           self._findQueryMapForType[typeQuery] = true;
           ref.on("child_added", _addChild, _handleError);
           ref.on("child_changed", _updateChild, _handleError);
-          ref.on("child_removed", _removeChild, _handleError);
+          // ref.on("child_removed", _removeChild, _handleError);
         }
 
         ref.once("value", _value, _handleError);
