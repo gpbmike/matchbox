@@ -290,13 +290,15 @@
       var data = record.serialize({ includeId: false });
       var ref = this._getRef(type, record.id);
       return new Ember.RSVP.Promise(function(resolve, reject) {
-        ref.set(data, function(err) {
+
+        ref.set(JSON.parse(JSON.stringify(data)), function(err) {
           if (err) {
-            Ember.run(null, reject, err);
+            reject(err);
           } else {
-            Ember.run(null, resolve);
+            resolve();
           }
         });
+
       }, "DS: FirebaseAdapter#createRecord " + type + " to " + ref.toString());
     },
 
